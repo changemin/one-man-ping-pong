@@ -12,57 +12,60 @@ colors = {
 }
 #게임 플레이에 주축이 되는 변수들 정의
 WINDOW_WIDTH = 600
-WINDWO_HEIGHT = 600
+WINDOW_HEIGHT = 600
 ballX = random.randrange(0, WINDOW_WIDTH)
-ballY = random.randrange(0, WINDWO_HEIGHT)
+ballY = random.randrange(0, WINDOW_HEIGHT)
 ballXSpd = 5
 ballYSpd = 5
 radius = 10
-windowSize = [WINDOW_WIDTH,WINDWO_HEIGHT] #창 크기 설정
+windowSize = [WINDOW_WIDTH,WINDOW_HEIGHT] #창 크기 설정
 screen = pygame.display.set_mode(windowSize) #screen 생성
 FPS = 60
 
-clock = pygame.time.Clock()
+FPSclock = pygame.time.Clock()
 Running = True
 pygame.display.set_caption("One Man Ping Pong")
 
 class Paddle:
-    def __init__(self, location, length, thickness):
-        self.location = location
+    def __init__(self, locationX, locationY, length, thickness):
+        self.locationX = locationX
+        self.locationY = locationY
         self.length = length
         self.thickness = thickness
+    def draw(self):
+        self.locationX = mousex
+        pygame.draw.line(screen, colors["paddle"],[self.locationX-(self.length/2),self.locationY],[self.locationX+(self.length/2),self.locationY],self.thickness)
 
-PaddleTOP = Paddle(random.randrange(0,WINDOW_WIDTH),50,10)
+PaddleTOP = Paddle(random.randrange(0,WINDOW_WIDTH),30,100,14) #스크린 위쪽 패들
+PaddleBOTTOM = Paddle(random.randrange(0,WINDOW_WIDTH),WINDOW_HEIGHT-30,100,14)
+mousex = 0
+mousey = 0
 while True:
+
     screen.fill(colors["background"])
     pygame.draw.circle(screen, colors["ball"], (ballX, ballY), radius)
-    pygame.draw.circle(screen, colors["background"], (ballX, ballY), radius) #다시 지우기
-    pygame.draw.line(screen, colors["paddle"],[PaddleTOP.location-(PaddleTOP.length/2),30],[PaddleTOP.location+(PaddleTOP.length/2),30],30)
+    PaddleTOP.draw()
+    PaddleBOTTOM.draw()
     ballX += ballXSpd
     ballY += ballYSpd
-    print("X:" + str(ballX) +" Y:"+str(ballY))
+    
     if(ballX + radius >= WINDOW_WIDTH or ballX - radius <= 0): #벽 충돌 이벤트 검사
         ballXSpd *= -1
-    if(ballY + radius >= WINDWO_HEIGHT or ballY - radius <= 0): #벽 충돌 이벤트 검사
+    if(ballY + radius >= WINDOW_HEIGHT or ballY - radius <= 0): #벽 충돌 이벤트 검사
         ballYSpd *= -1
     pygame.draw.circle(screen, colors["ball"], (ballX, ballY), radius)
-    for event in pygame.event.get(): #event get
-        if not hasattr(event, 'key'):
-            continue
-        if event.type == KEYDOWN:
-            if event.key == K_RIGHT:
-                print("KEY RIGHT")
-            elif event.key == K_LEFT:
-                print("KEY LEFT")
-            elif event.key == K_ESCAPE:
-                sys.exit()
-                pygame.quit()
-        '''if event.type == pygame.MOUSEMOTION:
-            print("mouse move "+event.pos)'''
-        if event.type == QUIT:
-            sys.exit()
+    for event in pygame.event.get():
+        if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
             pygame.quit()
-
+            sys.exit()
+        '''elif event.type == KEYDOWN:
+            if event.key == K_RIGHT:
+                print("right")
+            elif event.key == K_LEFT:
+                print("left")'''
+    mousex,mousey = pygame.mouse.get_pos()
+    print("("+str(mousex)+ ","+str(mousey)+")") # 마우스 위치 Logging
+    pygame.draw.circle(screen, (255,0,0), (mousex, mousey), 5) #마우스 위치 표시
     pygame.display.flip()
-    clock.tick(FPS)
+    FPSclock.tick(FPS)
     
