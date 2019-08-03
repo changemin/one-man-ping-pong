@@ -2,7 +2,6 @@ import pygame as pygame
 import sys, random
 from pygame.locals import *
 
-
 pygame.init()
 
 colors = {
@@ -20,7 +19,6 @@ FPS = 60
 FPSclock = pygame.time.Clock()
 Running = True
 pygame.display.set_caption("One Man Ping Pong")
-
 class Ball:
     def __init__(self, x, y, radius, Spd):
         self.x = x
@@ -28,36 +26,58 @@ class Ball:
         self.radius = radius
         self.XSpd = Spd
         self.YSpd = Spd
-    def draw(self):   
-        pygame.draw.circle(screen, colors["ball"], (self.x, self.x), self.radius)
+        self.WallColli = 0
+    def draw(self):
+        pygame.draw.circle(screen, colors["ball"], (self.x, self.y), self.radius)
         self.x += self.XSpd
         self.y += self.YSpd
     def collisionCheck(self):
-        if(self.x + self.radius >= WINDOW_WIDTH or self.x - self.radius <= 0): #벽 충돌 이벤트 검사
+        if(self.x + self.radius >= WINDOW_WIDTH or self.x - self.radius <= 0): #벽 충돌 이벤트
             self.XSpd *= -1
-        if(self.y + self.radius >= WINDOW_HEIGHT or self.y - self.radius <= 0): #벽 충돌 이벤트 검사
+            self.WallColli += 1
+        elif(self.y + self.radius >= WINDOW_HEIGHT or self.y - self.radius <= 0): #벽 충돌 이벤트
             self.YSpd *= -1
+            self.WallColli += 1
+        elif(self.x >= PaddleTOP.x - PaddleTOP.length/2 and self.x <= PaddleTOP.x + PaddleTOP.length/2): #상단 바와 충돌 검사
+            pygame.draw.circle(screen, (255,0,0), (50,50), self.radius)
+            if(self.y - self.radius <= PaddleTOP.y + PaddleTOP.thickness/2):
+                pygame.draw.circle(screen, (0,0,255), (100,50), self.radius)
+                self.YSpd *= -1
+                self.WallColli += 1
 
 class Paddle:
-    def __init__(self, locationX, locationY, length, thickness):
-        self.locationX = locationX
-        self.locationY = locationY
+    def __init__(self, x, y, length, thickness):
+        self.x = x
+        self.y = y
         self.length = length
         self.thickness = thickness
-    def draw(self):
-        self.locationX = mousex
-        pygame.draw.line(screen, colors["paddle"],[self.locationX-(self.length/2),self.locationY],[self.locationX+(self.length/2),self.locationY],self.thickness)
+    def drawTOP(self):
+        self.x = mousex
+        pygame.draw.line(screen, colors["paddle"],[self.x-(self.length/2),self.y],[self.x+(self.length/2),self.y],self.thickness)
+    def drawBOTTOM(self):
+        self.x = mousex
+        pygame.draw.line(screen, colors["paddle"],[WINDOW_WIDTH-(self.x-(self.length/2)),self.y],[WINDOW_WIDTH-(self.x+(self.length/2)),self.y],self.thickness)
+    def drawLEFT(self):
+        self.y = mousey
+        pygame.draw.line(screen, colors["paddle"],[self.x,self.y-(self.length/2)],[self.x,self.y+(self.length/2)],self.thickness)
+    def drawRIGHT(self):
+        self.y = mousey
+        pygame.draw.line(screen, colors["paddle"],[self.x,WINDOW_HEIGHT-(self.y-(self.length/2))],[self.x,WINDOW_HEIGHT-(self.y+(self.length/2))],self.thickness)
 
 Ball = Ball(random.randrange(10,WINDOW_WIDTH-10),random.randrange(10,WINDOW_HEIGHT-10),10,5) #게임공
-PaddleTOP = Paddle(random.randrange(0,WINDOW_WIDTH),30,100,14) #스크린 위쪽 패들
-PaddleBOTTOM = Paddle(random.randrange(0,WINDOW_WIDTH),WINDOW_HEIGHT-30,100,14)
+PaddleTOP = Paddle(random.randrange(0,WINDOW_WIDTH),30,100,14) #위쪽 패들
+PaddleBOTTOM = Paddle(random.randrange(0,WINDOW_WIDTH),WINDOW_HEIGHT-30,100,14) #아랫쪽 패들
+PaddleLEFT = Paddle(30,random.randrange(0,WINDOW_HEIGHT),100,14) #왼쪽 패들
+PaddleRIGHT = Paddle(WINDOW_WIDTH-30,random.randrange(0,WINDOW_HEIGHT),100,14) #오른쪽 패들
 mousex = 0
 mousey = 0
-while True:
 
+while True:
     screen.fill(colors["background"])
-    PaddleTOP.draw()
-    PaddleBOTTOM.draw()
+    PaddleTOP.drawTOP()
+    PaddleBOTTOM.drawBOTTOM()
+    PaddleLEFT.drawLEFT()
+    PaddleRIGHT.drawRIGHT()
     Ball.draw()
     Ball.collisionCheck()
 
@@ -67,7 +87,7 @@ while True:
             sys.exit()
 
     mousex,mousey = pygame.mouse.get_pos()
-    print("("+str(mousex)+ ","+str(mousey)+")") # 마우스 위치 Logging
+    print("("+str(mousex)+","+str(mousey)+") Wall Collision : "+str(Ball.WallColli)) # 마우스 위치 Logging
     pygame.draw.circle(screen, (255,0,0), (mousex, mousey), 5) #마우스 위치 표시
     pygame.display.flip()
     FPSclock.tick(FPS)
