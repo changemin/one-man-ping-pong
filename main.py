@@ -14,7 +14,7 @@ WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 600
 windowSize = [WINDOW_WIDTH,WINDOW_HEIGHT] #창 크기 설정
 screen = pygame.display.set_mode(windowSize) #screen 생성
-FPS = 10
+FPS = 60
 
 FPSclock = pygame.time.Clock()
 Running = True
